@@ -1,39 +1,31 @@
 package com.johnsandroidstudiotutorials.strobetoggle;
 
-
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
-import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.ToggleButton;
 
-
 public class MainActivity extends AppCompatActivity {
 
-    private CameraManager mCameraManager;
-    private String mCameraId;
-    private ToggleButton strobeToggleButton;
-    private Boolean isTorchOn;
-    private MediaPlayer mp;
+    private CameraManager cameraManager;
+    private String cameraId;
+    private boolean isTorchActivated;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.d("FlashLightActivity", "onCreate()");
 
-        strobeToggleButton = (ToggleButton) findViewById(R.id.strobe_toggle_button);
-        isTorchOn = false;
+        ToggleButton strobeToggleButton = (ToggleButton) findViewById(R.id.strobe_toggle_button);
 
-        Boolean isFlashAvailable = getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
+        boolean isFlashAvailable = getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
 
         if (!isFlashAvailable) {
 
@@ -52,9 +44,9 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        mCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+        cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
-            mCameraId = mCameraManager.getCameraIdList()[0];
+            cameraId = cameraManager.getCameraIdList()[0];
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -62,12 +54,12 @@ public class MainActivity extends AppCompatActivity {
         strobeToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 try {
-                    if (isTorchOn) {
+                    if (isTorchActivated) {
                         turnOffFlashLight();
-                        isTorchOn = false;
+                        isTorchActivated = false;
                     } else {
                         turnOnFlashLight();
-                        isTorchOn = true;
+                        isTorchActivated = true;
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -81,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                mCameraManager.setTorchMode(mCameraId, true);
+                cameraManager.setTorchMode(cameraId, true);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                mCameraManager.setTorchMode(mCameraId, false);
+                cameraManager.setTorchMode(cameraId, false);
             }
 
         } catch (Exception e) {
@@ -104,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if (isTorchOn) {
+        if (isTorchActivated) {
             turnOffFlashLight();
         }
     }
@@ -112,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (isTorchOn) {
+        if (isTorchActivated) {
             turnOffFlashLight();
         }
     }
@@ -120,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (isTorchOn) {
+        if (isTorchActivated) {
             turnOnFlashLight();
         }
     }
