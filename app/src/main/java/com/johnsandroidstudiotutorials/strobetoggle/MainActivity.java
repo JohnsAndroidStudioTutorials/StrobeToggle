@@ -7,6 +7,8 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.CompoundButton;
@@ -17,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     private CameraManager cameraManager;
     private String cameraId;
     private boolean isTorchActivated;
+    Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
                         turnOffFlashLight();
                         isTorchActivated = false;
                     } else {
-                        turnOnFlashLight();
+                        strobe();
                         isTorchActivated = true;
                     }
                 } catch (Exception e) {
@@ -91,6 +94,43 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void strobe() {
+        handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                // TODO Auto-generated method stub
+                super.handleMessage(msg);
+            }
+        };
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+                        while (isTorchActivated) {
+
+                            try {
+                                cameraManager.setTorchMode(cameraId, true);
+                                Thread.sleep(10);
+                                cameraManager.setTorchMode(cameraId, false);
+
+
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }).start();
+        turnOffFlashLight();
     }
 
     @Override
